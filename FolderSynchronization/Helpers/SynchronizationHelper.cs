@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -39,14 +41,49 @@ namespace FolderSynchronization.Helpers
                     return true;
                 }
 
-                // TODO: check md5
+                if (!CheckFileMd5(sourceFile, destinationFilePath))
+                {
+                    return true; 
+                }
 
+                // Check subfolders
+                var sourceSubfolders = Directory.GetDirectories(sourceFolder);
+                var destinationSubfolders = Directory.GetDirectories(destinationFolder);
 
+                // Check if number of immediate subfolders is the same
+                if (sourceSubfolders.Length != destinationSubfolders.Length)
+                {
+                    return true;
+                }
 
+                // Check if subfolders vary in content
+                foreach (var sourceSubfolder in sourceSubfolders)
+                {
+                    string subfolderName = Path.GetFileName(sourceSubfolder);
+                    string destinationSubfolderPath = Path.Combine(destinationFolder, subfolderName);
+
+                    if (IsSyncNeeded(sourceSubfolder, destinationSubfolderPath))
+                    {
+                        return true;
+                    }
+                }
             }
 
             // Return false if no differences were found
             return false;
+        }
+
+        public static bool CheckFileMd5(string file1, string file2)
+        {
+            using var md5 = MD5.Create();
+
+            using var stream1 = File.OpenRead(file1);
+            using var stream2 = File.OpenRead(file2);
+
+            var hash1 = md5.ComputeHash(stream1);
+            var hash2 = md5.ComputeHash(stream2);
+
+            return StructuralComparisons.StructuralEqualityComparer.Equals(hash1, hash2);
         }
     }
 }

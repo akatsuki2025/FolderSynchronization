@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FolderSynchronization.Helpers
 {
-    public static class PathValidationHelper
+    public static class ArgsValidationHelper
     {
         public static bool ValidateDirectory(string path, string pathName, out string fullPath)
         {
@@ -50,5 +50,16 @@ namespace FolderSynchronization.Helpers
 
             return true;
         }
+
+        public static bool ValidateSyncInterval(string input, out int syncIntervalSeconds)
+        {
+            if (!int.TryParse(input, out syncIntervalSeconds) || syncIntervalSeconds < 0)
+            {
+                Console.WriteLine("Error: Synchronization interval must be a non-negative integer (seconds).");
+                return false;
+            }
+            return true;
+        }
+
     }
 }
