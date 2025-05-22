@@ -12,6 +12,7 @@ namespace FolderSynchronization.Helpers
         {
             Console.WriteLine("Delete incomplete copy? (y/n)");
             string answer = Console.ReadLine();
+            
             if (!string.IsNullOrEmpty(answer) && answer.Trim().ToLower() == "y")
             {
                 try
@@ -19,34 +20,46 @@ namespace FolderSynchronization.Helpers
                     if (Directory.Exists(folderPath))
                     {
                         DeleteDirectorySafe(folderPath);
-                        Console.WriteLine("Incomplete copy deleted.");
+                        LoggerHelper.Log("Incomplete copy deleted.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to delete incomplete copy: {ex.Message}");
+                    LoggerHelper.Log($"Failed to delete incomplete copy: {ex.Message}");
                 }
             }
             else
             {
-                Console.WriteLine("Incomplete copy retained");
+                LoggerHelper.Log("Incomplete copy retained");
             }
         }
 
         private static void DeleteDirectorySafe(string folderPath)
         {
             if (!Directory.Exists(folderPath))
-                return;
-
-            // Remove read-only attributes from all files
-            var files = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories);
-            foreach (var file in files)
             {
-                File.SetAttributes(file, FileAttributes.Normal);
+                LoggerHelper.Log($"Delete skipped: Directory {folderPath} does not exist");
+                return;
             }
 
-            // Delete directory recursively
-            Directory.Delete(folderPath, recursive: true);
+            try
+            {
+                // Remove read-only attributes from all files
+                var files = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories);
+                foreach (var file in files)
+                {
+                    File.SetAttributes(file, FileAttributes.Normal);
+                }
+
+                // Delete directory recursively
+                Directory.Delete(folderPath, recursive: true);
+                LoggerHelper.Log($"Successfully deleted directory: {folderPath}");
+            }
+            catch (Exception ex)
+            {
+                LoggerHelper.Log($"Failed to delete directory {folderPath}: {ex.Message}");
+                throw;
+            }
         }
     }
 }

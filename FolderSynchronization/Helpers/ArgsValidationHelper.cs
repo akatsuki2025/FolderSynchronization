@@ -61,5 +61,32 @@ namespace FolderSynchronization.Helpers
             return true;
         }
 
+        public static bool ValidateLogFilePath(string logFilePath)
+        {
+            if (string.IsNullOrWhiteSpace(logFilePath)) 
+            {
+                Console.WriteLine("Error: Log file path cannot be empty or whitespace.");
+                return false;
+            }
+
+            try
+            {
+                string fullLogPath = Path.GetFullPath(logFilePath);
+                string logFolder = Path.GetDirectoryName(fullLogPath);
+
+                if (string.IsNullOrWhiteSpace(logFolder))
+                {
+                    Console.WriteLine("Error: Log file must include a valid directory");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Error: Invalid log file path {logFilePath}: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

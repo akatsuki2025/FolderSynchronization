@@ -13,8 +13,10 @@ namespace FolderSynchronization.Helpers
         public static bool IsSyncNeeded(string sourceFolder, string destinationFolder)
         {
             // Check if destination folder already exists
-            if (!Directory.Exists(destinationFolder)) 
+            if (!Directory.Exists(destinationFolder))
+            {
                 return true;
+            }
             
             var sourceFiles = Directory.GetFiles(sourceFolder);
             var destinationFiles = Directory.GetFiles(destinationFolder);
