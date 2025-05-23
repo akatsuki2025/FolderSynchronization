@@ -18,60 +18,60 @@ class Program
         // Validate provided arguments
         if (args.Length != 4)
         {
-            Console.WriteLine("Usage: FoderSynchronization <sourceFolderPath> <destinationFolderPath> <synchronizationIntervalSeconds> <logFilePath>");
+            Console.WriteLine("Usage: FolderSynchronization <sourceFolderPath> <destinationFolderPath> <synchronizationIntervalSeconds> <logFilePath>");
             return;
         }
 
-        string sourcePath = args[0];
-        string destinationParentPath = args[1];
-        string syncIntervalArg = args[2];
-        string logFilePath = args[3];
+        string sourcePathInput = args[0];
+        string destinationParentPathInput = args[1];
+        string synchronizationIntervalInput = args[2];
+        string logFilePathInput = args[3];
 
         // Validate synchronization interval (in seconds) and assign it to syncIntervalSeconds
-        if (!ValidateSyncInterval(syncIntervalArg, out int syncIntervalSeconds))
+        if (!ValidateSyncInterval(synchronizationIntervalInput, out int synchronizationIntervalSeconds))
             return;
 
         // Validate source and destination folder path
-        if (!ValidateDirectory(sourcePath, "Source directory", out string sourceFolderPath) ||
-                !ValidateDirectory(destinationParentPath, "Source directory", out string destinationFolderPath))
+        if (!ValidateDirectory(sourcePathInput, "Source directory", out string validatedSourcePath) ||
+                !ValidateDirectory(destinationParentPathInput, "Destination parent directory", out string validatedDestinationParentPath))
             return;
 
         // Validate log file path
-        if (!ValidateLogFilePath(logFilePath))
+        if (!ValidateLogPath(logFilePathInput, out string resolvedLogPath))
             return;
 
-        LoggerHelper.Initialize(logFilePath);
+        LoggerHelper.Initialize(resolvedLogPath);
 
         // Get a source folder name and create a path to the replica folder in a following way: destinationFolderPath / folderName + "_copy"
-        string folderName = Path.GetFileName(sourceFolderPath.TrimEnd(Path.DirectorySeparatorChar));
-        string destinationPath = Path.Combine(destinationFolderPath, folderName + "_copy");
-
-        // PR: to sprawdzenie to raczej już w samej funkcji copy folder bym dał, i tak już tam masz create directory, które powinno być zaraz po Directory.Exists
-        // Check if the folder already exists
-        /*if (Directory.Exists(destinationPath))
-        {
-            Console.WriteLine($"Warning: The destination directory {destinationPath} aready exists and files may be overwritten.");
-        }*/
+        string sourceFolderName = Path.GetFileName(validatedSourcePath.TrimEnd(Path.DirectorySeparatorChar));
+        string replicaFolderPath = Path.Combine(validatedDestinationParentPath, sourceFolderName + "_copy");
 
         while (true)
         {
             try
             {
-                if (IsSyncNeeded(sourceFolderPath, destinationPath))
+                if (IsSyncNeeded(validatedSourcePath, replicaFolderPath))
                 {
                     LoggerHelper.Log("Changes detected or initial copy required. Synchronizing...");
-                    CopyFolder(sourceFolderPath, destinationPath);
+                    CopyFolder(validatedSourcePath, replicaFolderPath);
                     LoggerHelper.Log("Synchronization complete.");
+                }
+                else
+                {
+                    Console.WriteLine("No changes detected. Folders are already synchronized.");
                 }
             }
             catch (Exception ex)
             {
                 LoggerHelper.Log($"Error during synchronization: {ex.Message}");
-                PromptAndDeleteIncompleteCopy(destinationPath);
+                PromptAndDeleteIncompleteCopy(replicaFolderPath);
                 return;
             }
 
-            Thread.Sleep(syncIntervalSeconds * 1000);
+            LoggerHelper.Log($"Next check scheduled in {synchronizationIntervalSeconds} seconds");
+            LoggerHelper.Log("Listening for changes... Press Ctrl+C to exit");
+
+            Thread.Sleep(synchronizationIntervalSeconds * 1000);
         }
     }
 }

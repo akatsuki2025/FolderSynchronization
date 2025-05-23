@@ -10,23 +10,38 @@ namespace FolderSynchronization.Helpers
     internal class LoggerHelper
     {
         private static string _logFilePath;
+        private static bool _initialized = false;
 
-        public static void Initialize(string logFilePath)
+        public static void Initialize(string logPath)
         {
-            _logFilePath = logFilePath;
+            // TODO: opcjonalnie blokowanie obiektu
+            // TODO: opcjonalnie watcher na wypadek usunięcia pliku w trakcie działania programu
 
             try
             {
-                var logFolder = Path.GetDirectoryName(_logFilePath);
-                if (!Directory.Exists(logFolder))
+                // Check if the path is a directory
+                if (Directory.Exists(logPath))
                 {
-                    Directory.CreateDirectory(logFolder);
+                    // Create default log file name with timestamp
+                    string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    string defaultLogFileName = $"log_{timestamp}.log";
+                    _logFilePath = Path.Combine(logPath, defaultLogFileName);
                 }
+
+                else
+                {
+                    // Path is a file path
+                    _logFilePath = logPath;
+                }
+
+                _initialized = true;
                 File.AppendAllText(_logFilePath, $"Log started at {DateTime.Now}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to initialize log file: {ex.Message}");
+                _initialized = false;
+                throw;
             }
         }
 
@@ -35,13 +50,20 @@ namespace FolderSynchronization.Helpers
             string timestampedMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}";
             Console.WriteLine(timestampedMessage);
 
-            try
+            if (_initialized)
             {
-                File.AppendAllText(_logFilePath, timestampedMessage + Environment.NewLine);
+                try
+                {
+                    File.AppendAllText(_logFilePath, timestampedMessage + Environment.NewLine);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to write to log file: {ex.Message}");
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Failed to write to log file: {ex.Message}");
+                Console.WriteLine("Warning: Logger not initialized, message only written to console");
             }
         }
     }
