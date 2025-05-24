@@ -13,38 +13,25 @@ namespace FolderSynchronization.Helpers
         {
             resolvedFullPath = string.Empty; 
 
-            if (string.IsNullOrWhiteSpace(directoryPath))
+            if (IsEmptyOrWhitespace(directoryPath, directoryDescription))
             {
-                Console.WriteLine($"Error: {directoryDescription} cannot be empty or whitespace."); 
                 return false;
             }
 
             directoryPath = directoryPath.Trim();
 
-            if (Regex.IsMatch(directoryPath, @"^[A-Za-z]:\s*$"))
+            if (IsDriveLetterWithColonOnly(directoryPath, directoryDescription))
             {
-                Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is not a valid folder path.");
                 return false;
             }
 
-            try 
+            if (!ResolveAndValidateFullPath(directoryPath, directoryDescription, out resolvedFullPath))
             {
-                resolvedFullPath = Path.GetFullPath(directoryPath);
-                if (resolvedFullPath.Equals(Path.GetPathRoot(directoryPath), StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is a drive root. Copying an entire drive is not allowed.");
-                    return false;
-                }
-            }
-            catch
-            {
-                Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is not a valid path.");
                 return false;
             }
 
-            if (!Directory.Exists(resolvedFullPath))
+            if (!ConfirmDirectoryExists(resolvedFullPath, directoryPath, directoryDescription))
             {
-                Console.WriteLine($"Error: {directoryDescription} '{directoryPath} does not exist.");
                 return false;
             }
 
@@ -140,6 +127,60 @@ namespace FolderSynchronization.Helpers
                 Console.WriteLine($"Invalid log file path: {ex.Message}");
                 return false;
             }
+        }
+
+        private static bool IsEmptyOrWhitespace(string path, string pathDescription)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                Console.WriteLine($"Error: {pathDescription} cannot be empty or whitespace.");
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsDriveLetterWithColonOnly(string path, string pathDescription)
+        {
+            if (Regex.IsMatch(path, @"^[A-Za-z]:\s*$"))
+            {
+                Console.WriteLine($"Error: {pathDescription} '{path}' is not a valid folder path.");
+                return true;
+            }
+            return false;
+        }
+
+        private static bool ResolveAndValidateFullPath(string directoryPath, string directoryDescription,out string resolvedFullPath)
+        {
+            resolvedFullPath = string.Empty;
+
+            try
+            {
+                resolvedFullPath = Path.GetFullPath(directoryPath);
+
+                // Check if the path is a drive root (e.g. "C:\")
+                if (resolvedFullPath.Equals(Path.GetPathRoot(directoryPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is a drive root. Copying an entire drive is not allowed.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is not a valid path.");
+                return false;
+            }
+        }
+
+        private static bool ConfirmDirectoryExists(string resolvedPath, string originalPath, string directoryDescription)
+        {
+            if (!Directory.Exists(resolvedPath))
+            {
+                Console.WriteLine($"Error: {directoryDescription} '{originalPath} does not exist.");
+                return false;
+            }
+            return true;
         }
     }
 }
