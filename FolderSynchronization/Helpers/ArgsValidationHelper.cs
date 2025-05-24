@@ -9,51 +9,51 @@ namespace FolderSynchronization.Helpers
 {
     public static class ArgsValidationHelper
     {
-        public static bool ValidateDirectory(string path, string pathName, out string fullPath)
+        public static bool ValidateDirectory(string directoryPath, string directoryDescription, out string resolvedFullPath)
         {
-            fullPath = null;
+            resolvedFullPath = string.Empty; 
 
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(directoryPath))
             {
-                Console.WriteLine($"Error: {pathName} cannot be empty or shitespce.");
+                Console.WriteLine($"Error: {directoryDescription} cannot be empty or whitespace."); 
                 return false;
             }
 
-            path = path.Trim();
+            directoryPath = directoryPath.Trim();
 
-            if (Regex.IsMatch(path, @"^[A-Za-z]:\s*$"))
+            if (Regex.IsMatch(directoryPath, @"^[A-Za-z]:\s*$"))
             {
-                Console.WriteLine($"Error: {pathName} '{path}' is not a valid folder path.");
+                Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is not a valid folder path.");
                 return false;
             }
 
-            try
+            try 
             {
-                fullPath = Path.GetFullPath(path);
-                if (fullPath.Equals(Path.GetPathRoot(pathName), StringComparison.OrdinalIgnoreCase))
+                resolvedFullPath = Path.GetFullPath(directoryPath);
+                if (resolvedFullPath.Equals(Path.GetPathRoot(directoryPath), StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine($"Error: {pathName} '{path}' is a drive root. Copying an entire drive is not allowed.");
+                    Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is a drive root. Copying an entire drive is not allowed.");
                     return false;
                 }
             }
             catch
             {
-                Console.WriteLine($"Error: {pathName} '{path}' is not a valid path.");
+                Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is not a valid path.");
                 return false;
             }
 
-            if (!Directory.Exists(fullPath))
+            if (!Directory.Exists(resolvedFullPath))
             {
-                Console.WriteLine($"Error: {pathName} '{path} does not exist.");
+                Console.WriteLine($"Error: {directoryDescription} '{directoryPath} does not exist.");
                 return false;
             }
 
             return true;
         }
 
-        public static bool ValidateSyncInterval(string input, out int syncIntervalSeconds)
+        public static bool ValidateSynchronizationInterval(string intervalInput, out int synchronizationIntervalInSeconds)
         {
-            if (!int.TryParse(input, out syncIntervalSeconds) || syncIntervalSeconds < 0)
+            if (!int.TryParse(intervalInput, out synchronizationIntervalInSeconds) || synchronizationIntervalInSeconds < 0)
             {
                 Console.WriteLine("Error: Synchronization interval must be a non-negative integer (seconds).");
                 return false;
@@ -63,7 +63,7 @@ namespace FolderSynchronization.Helpers
 
         public static bool ValidateLogPath(string logPathInput, out string resolvedLogPath)
         {
-            resolvedLogPath = null;
+            resolvedLogPath = string.Empty;
 
             // Check if logPathInput is a valid directory
             if (ValidateDirectory(logPathInput, "Log directory", out string validatedLogDirectory))
@@ -85,7 +85,7 @@ namespace FolderSynchronization.Helpers
                 string fullLogPath = Path.GetFullPath(logPathInput);
 
                 // Check file extension
-                string extension = Path.GetExtension(fullLogPath).ToLower();
+                string? extension = Path.GetExtension(fullLogPath).ToLower();
                 if (string.IsNullOrWhiteSpace(extension) || (extension != ".log" && extension != ".txt"))
                 {
                     Console.WriteLine("Error: Log file must have .log or .txt extension");
@@ -93,7 +93,7 @@ namespace FolderSynchronization.Helpers
                 }
 
                 // Check if directory exists or can be created
-                string logDirectoryPath = Path.GetDirectoryName(fullLogPath);
+                string? logDirectoryPath = Path.GetDirectoryName(fullLogPath);
                 if (string.IsNullOrWhiteSpace(logDirectoryPath))
                 {
                      Console.WriteLine("Error: Invalid log file path - missing directory");

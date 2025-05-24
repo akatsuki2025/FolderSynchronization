@@ -28,7 +28,7 @@ class Program
         string logFilePathInput = args[3];
 
         // Validate synchronization interval (in seconds) and assign it to syncIntervalSeconds
-        if (!ValidateSyncInterval(synchronizationIntervalInput, out int synchronizationIntervalSeconds))
+        if (!ValidateSynchronizationInterval(synchronizationIntervalInput, out int synchronizationIntervalSeconds))
             return;
 
         // Validate source and destination folder path
