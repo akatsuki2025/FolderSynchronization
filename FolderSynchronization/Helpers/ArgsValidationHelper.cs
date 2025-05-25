@@ -60,73 +60,43 @@ namespace FolderSynchronization.Helpers
             }
 
             // Check if logPathInput is a valid file (.txt or .log)
-            try
+            if (!IsEmptyOrWhitespace(logPathInput, "Log file path"))
             {
-                
-                if (string.IsNullOrWhiteSpace(logPathInput))
+                try
                 {
-                    Console.WriteLine("Error: Log file path cannot be empty or whitespace.");
-                    return false;
-                }
+                    string fullLogFilePath = Path.GetFullPath(logPathInput);
 
-                string fullLogPath = Path.GetFullPath(logPathInput);
-
-                // Check file extension
-                string? extension = Path.GetExtension(fullLogPath).ToLower();
-                if (string.IsNullOrWhiteSpace(extension) || (extension != ".log" && extension != ".txt"))
-                {
-                    Console.WriteLine("Error: Log file must have .log or .txt extension");
-                    return false;
-                }
-
-                // Check if directory exists or can be created
-                string? logDirectoryPath = Path.GetDirectoryName(fullLogPath);
-                if (string.IsNullOrWhiteSpace(logDirectoryPath))
-                {
-                     Console.WriteLine("Error: Invalid log file path - missing directory");
-                     return false;
-                }
-
-                // Check persmissions - try to create directory if it doesn't exist
-                if (!Directory.Exists(logDirectoryPath))
-                {
-                    try
+                    if (!ValidateLogFileExtension(fullLogFilePath))
                     {
-                        Directory.CreateDirectory(logDirectoryPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error creating log directory: {ex.Message}");
                         return false;
                     }
-                }
 
-                // Check if the file existis and can be appended to
-                if (File.Exists(fullLogPath))
-                {
-                    try
+                    if (!ValidateLogDirectoryPath(fullLogFilePath))
                     {
-                        // Try to open the file for append to validate access
-                        using (FileStream fs = new FileStream(fullLogPath, FileMode.Append))
-                        {
-                            // Testing permissions
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error: Cannot write to existing log file: {ex.Message}");
                         return false;
                     }
-                }
 
-                resolvedLogPath = fullLogPath;
-                return true;
+                    if(!EnsureLogDirectoryExists(fullLogFilePath))
+                    {
+                        return false;
+                    }
+                    
+                    if(!VerifyFileWriteAccess(fullLogFilePath))
+                    {
+                        return false;
+                    }
+
+                    resolvedLogPath = fullLogFilePath;
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Invalid log file path: {ex.Message}");
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Invalid log file path: {ex.Message}");
-                return false;
-            }
+
+            return false;
         }
 
         private static bool IsEmptyOrWhitespace(string path, string pathDescription)
@@ -179,6 +149,69 @@ namespace FolderSynchronization.Helpers
             {
                 Console.WriteLine($"Error: {directoryDescription} '{originalPath} does not exist.");
                 return false;
+            }
+            return true;
+        }
+
+        private static bool ValidateLogFileExtension(string logFilePath)
+        {
+            string extension = Path.GetExtension(logFilePath).ToLower();
+            if (string.IsNullOrWhiteSpace(extension) || (extension != ".log" && extension != ".txt"))
+            {
+                Console.WriteLine("Error: Log file must have .log or .txt extension");
+                return false;
+            }
+            return true;
+        }
+
+        private static bool ValidateLogDirectoryPath(string fullLogFilePath)
+        {
+            string? logDirectoryPath = Path.GetDirectoryName(fullLogFilePath);
+
+            if (string.IsNullOrWhiteSpace(logDirectoryPath))
+            {
+                Console.WriteLine("Error: Invalid log file path - missing directory");
+                return false;
+            }
+            return true;
+        }
+
+        private static bool EnsureLogDirectoryExists(string fullLogFilePath)
+        {
+            string? logDirectoryPath = Path.GetDirectoryName(fullLogFilePath);
+
+            if (!Directory.Exists(logDirectoryPath))
+            {
+                try
+                {
+                    Directory.CreateDirectory(logDirectoryPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating log directory: {ex.Message}");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool VerifyFileWriteAccess(string fullLogFilePath)
+        {
+            if (File.Exists(fullLogFilePath))
+            {
+                try
+                {
+                    // Try to open the file for append to validate access
+                    using (FileStream fs = new FileStream(fullLogFilePath, FileMode.Append))
+                    {
+                        // Testing permissions
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: Cannot write to existing log file: {ex.Message}");
+                    return false;
+                }
             }
             return true;
         }
