@@ -1,5 +1,4 @@
 ﻿using static FolderSynchronization.Helpers.ArgsValidationHelper;
-using static FolderSynchronization.Helpers.SynchronizationHelper;
 using static FolderSynchronization.Helpers.CleanupHelper;
 using FolderSynchronization.Helpers;
 

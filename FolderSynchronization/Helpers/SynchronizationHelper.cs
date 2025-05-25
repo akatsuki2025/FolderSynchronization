@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace FolderSynchronization.Helpers
 {
     public static class SynchronizationHelper
@@ -185,7 +186,7 @@ namespace FolderSynchronization.Helpers
                         string directoryPathToDelete = Path.Combine(destinationFolder, directoryNameToCheck);
                         try
                         {
-                            CleanupHelper.DeleteDirectorySafe(directoryPathToDelete);
+                            DeleteHelper.DeleteDirectorySafe(directoryPathToDelete);
                             LoggerHelper.Log($"Deleted directory that does not exist in source directory: '{directoryNameToCheck}'");
                         }
                         catch (Exception ex)
