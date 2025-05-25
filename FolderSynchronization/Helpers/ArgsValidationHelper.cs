@@ -9,7 +9,7 @@ namespace FolderSynchronization.Helpers
 {
     public static class ArgsValidationHelper
     {
-        public static bool ValidateDirectory(string directoryPath, string directoryDescription, out string resolvedFullPath)
+        public static bool ValidateDirectory(string directoryPath, string directoryDescription, out string resolvedFullPath, bool suppressError = false)
         {
             resolvedFullPath = string.Empty; 
 
@@ -30,7 +30,7 @@ namespace FolderSynchronization.Helpers
                 return false;
             }
 
-            if (!ConfirmDirectoryExists(resolvedFullPath, directoryPath, directoryDescription))
+            if (!ConfirmDirectoryExists(resolvedFullPath, directoryPath, directoryDescription, suppressError))
             {
                 return false;
             }
@@ -60,9 +60,15 @@ namespace FolderSynchronization.Helpers
 
             try
             {
-                string fullLogFilePath = Path.GetFullPath(logPathInput);
+                // Check if the path is a directory
+                if (ValidateDirectory(logPathInput, "Log directory", out resolvedLogPath, suppressError: true))
+                {
+                    return true;
+                }
 
                 // Check if logPathInput is a valid file (.txt or .log)
+                string fullLogFilePath = Path.GetFullPath(logPathInput);
+
                 if (ValidateLogFileExtension(fullLogFilePath))
                 {
                     if (!ValidateLogDirectoryPath(fullLogFilePath))
@@ -85,12 +91,8 @@ namespace FolderSynchronization.Helpers
                 }
                 else 
                 {
-                    // Treat it as a directory path if no valid log file extension is found
-                    if (!ValidateDirectory(logPathInput, "Log directory", out resolvedLogPath))
-                    {
-                        return false;
-                    }
-                    return true;
+                    Console.WriteLine("Error: Log file must have .log or .txt extension");
+                    return false;
                 }
             }
             catch (Exception ex)
@@ -144,11 +146,14 @@ namespace FolderSynchronization.Helpers
             }
         }
 
-        private static bool ConfirmDirectoryExists(string resolvedPath, string originalPath, string directoryDescription)
+        private static bool ConfirmDirectoryExists(string resolvedPath, string originalPath, string directoryDescription, bool suppressError = false)
         {
             if (!Directory.Exists(resolvedPath))
             {
-                Console.WriteLine($"Error: {directoryDescription} '{originalPath}' does not exist.");
+                if (!suppressError)
+                {
+                    Console.WriteLine($"Error: {directoryDescription} '{originalPath}' does not exist.");
+                }
                 return false;
             }
             return true;
