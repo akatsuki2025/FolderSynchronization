@@ -8,13 +8,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        /* To consider:
-         * permissions
-         * folders like C
-         * check if there is enough space on disk
-         * spacja na końcu "C: "
-         */
-
         // Validate provided arguments
         if (args.Length != 4)
         {
@@ -50,16 +43,11 @@ class Program
         {
             try
             {
-                if (IsSyncNeeded(validatedSourcePath, replicaFolderPath))
-                {
-                    LoggerHelper.Log("Changes detected or initial copy required. Synchronizing...");
-                    CopyFolder(validatedSourcePath, replicaFolderPath);
-                    LoggerHelper.Log("Synchronization complete.");
-                }
-                else
-                {
-                    Console.WriteLine("No changes detected. Folders are already synchronized.");
-                }
+                LoggerHelper.Log($"Synchronizing folders at {DateTime.Now}");                
+
+                SynchronizationHelper.SynchronizeFolder(validatedSourcePath, replicaFolderPath);
+
+                LoggerHelper.Log("Synchronization complete.");
             }
             catch (Exception ex)
             {

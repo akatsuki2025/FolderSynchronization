@@ -52,36 +52,30 @@ namespace FolderSynchronization.Helpers
         {
             resolvedLogPath = string.Empty;
 
-            // Check if logPathInput is a valid directory
-            if (ValidateDirectory(logPathInput, "Log directory", out string validatedLogDirectory))
+            
+            if (IsEmptyOrWhitespace(logPathInput, "Log file path"))
             {
-                resolvedLogPath = validatedLogDirectory;
-                return true;
+                return false;
             }
 
-            // Check if logPathInput is a valid file (.txt or .log)
-            if (!IsEmptyOrWhitespace(logPathInput, "Log file path"))
+            try
             {
-                try
+                string fullLogFilePath = Path.GetFullPath(logPathInput);
+
+                // Check if logPathInput is a valid file (.txt or .log)
+                if (ValidateLogFileExtension(fullLogFilePath))
                 {
-                    string fullLogFilePath = Path.GetFullPath(logPathInput);
-
-                    if (!ValidateLogFileExtension(fullLogFilePath))
-                    {
-                        return false;
-                    }
-
                     if (!ValidateLogDirectoryPath(fullLogFilePath))
                     {
                         return false;
                     }
 
-                    if(!EnsureLogDirectoryExists(fullLogFilePath))
+                    if (!EnsureLogDirectoryExists(fullLogFilePath))
                     {
                         return false;
                     }
-                    
-                    if(!VerifyFileWriteAccess(fullLogFilePath))
+
+                    if (!VerifyFileWriteAccess(fullLogFilePath))
                     {
                         return false;
                     }
@@ -89,14 +83,21 @@ namespace FolderSynchronization.Helpers
                     resolvedLogPath = fullLogFilePath;
                     return true;
                 }
-                catch (Exception ex)
+                else 
                 {
-                    Console.WriteLine($"Invalid log file path: {ex.Message}");
-                    return false;
+                    // Treat it as a directory path if no valid log file extension is found
+                    if (!ValidateDirectory(logPathInput, "Log directory", out resolvedLogPath))
+                    {
+                        return false;
+                    }
+                    return true;
                 }
             }
-
-            return false;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Invalid log file path: {ex.Message}");
+                return false;
+            }
         }
 
         private static bool IsEmptyOrWhitespace(string path, string pathDescription)
@@ -147,7 +148,7 @@ namespace FolderSynchronization.Helpers
         {
             if (!Directory.Exists(resolvedPath))
             {
-                Console.WriteLine($"Error: {directoryDescription} '{originalPath} does not exist.");
+                Console.WriteLine($"Error: {directoryDescription} '{originalPath}' does not exist.");
                 return false;
             }
             return true;

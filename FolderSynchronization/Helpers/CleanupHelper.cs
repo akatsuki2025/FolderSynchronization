@@ -34,7 +34,7 @@ namespace FolderSynchronization.Helpers
             }
         }
 
-        private static void DeleteDirectorySafe(string folderPath)
+        public static void DeleteDirectorySafe(string folderPath)
         {
             if (!Directory.Exists(folderPath))
             {
