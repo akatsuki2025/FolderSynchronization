@@ -40,7 +40,7 @@ namespace FolderSynchronization.Helpers
 
         public static bool ValidateSynchronizationInterval(string intervalInput, out int synchronizationIntervalInSeconds)
         {
-            if (!int.TryParse(intervalInput, out synchronizationIntervalInSeconds) || synchronizationIntervalInSeconds < 0)
+            if (!int.TryParse(intervalInput, out synchronizationIntervalInSeconds) || synchronizationIntervalInSeconds <= 0)
             {
                 Console.WriteLine("Error: Synchronization interval must be a non-negative integer (seconds).");
                 return false;
