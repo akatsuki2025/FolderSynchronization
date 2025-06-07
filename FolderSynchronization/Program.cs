@@ -9,7 +9,7 @@ class Program
         // Validate provided arguments
         if (args.Length != 4)
         {
-            Console.WriteLine("Usage: FolderSynchronization <sourceFolderPath> <destinationFolderPath> <synchronizationIntervalSeconds> <logFilePath>");
+            Console.WriteLine("Usage: FolderSynchronization <sourceFolderPath> <destinationFolderPath> <synchronizationIntervalSeconds> <logFolderPath>");
             return;
         }
 
