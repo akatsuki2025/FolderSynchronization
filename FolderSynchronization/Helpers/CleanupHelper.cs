@@ -28,9 +28,6 @@ namespace FolderSynchronization.Helpers
                         DeleteDirectorySafe(folderPath);
                         Log.Information("Incomplete copy deleted: {folderPath}", folderPath);
                     }
-                    else 
-                    {
-                        Log.Warning("Directory not found: {folderPath}", folderPath);
                 }
                 catch (Exception ex)
                 {

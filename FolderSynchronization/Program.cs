@@ -16,12 +16,12 @@ class Program
         string sourcePathInput = args[0];
         string destinationParentPathInput = args[1];
         string synchronizationIntervalInput = args[2];
-        string logFilePathInput = args[3];
+        string logPathInput = args[3];
 
         // Validate log file path and initialize the logger
-        if (!LogFileValidator.ValidateLogPath(logFilePathInput, out string resolvedLogPath))
+        if (!LogFileValidator.ValidateLogPath(logPathInput, out string resolvedLogPath))
         {
-            Console.WriteLine("Invalid log file path. Exiting.");
+            Console.WriteLine("Invalid log path. Exiting.");
             return;
         }
         try
