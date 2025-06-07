@@ -1,4 +1,4 @@
-﻿using static FolderSynchronization.Helpers.ArgsValidationHelper;
+﻿namespace FolderSynchronization.Validators;
 using static FolderSynchronization.Helpers.CleanupHelper;
 using FolderSynchronization.Helpers;
 
@@ -18,20 +18,21 @@ class Program
         string synchronizationIntervalInput = args[2];
         string logFilePathInput = args[3];
 
+        // Validate log file path and initialize the logger
+        if (!LogFileValidator.ValidateLogPath(logFilePathInput, out string resolvedLogPath))
+            return;
+
+        if(!LoggerHelper.Initialize(resolvedLogPath))
+            return;
+
         // Validate synchronization interval (in seconds) and assign it to syncIntervalSeconds
-        if (!ValidateSynchronizationInterval(synchronizationIntervalInput, out int synchronizationIntervalSeconds))
+        if (!SynchronizationIntervalValidator.ValidateSynchronizationInterval(synchronizationIntervalInput, out int synchronizationIntervalSeconds))
             return;
 
         // Validate source and destination folder path
-        if (!ValidateDirectory(sourcePathInput, "Source directory", out string validatedSourcePath) ||
-                !ValidateDirectory(destinationParentPathInput, "Destination parent directory", out string validatedDestinationParentPath))
+        if (!DirectoryValidator.ValidateDirectory(sourcePathInput, "Source directory", out string validatedSourcePath) ||
+                !DirectoryValidator.ValidateDirectory(destinationParentPathInput, "Destination parent directory", out string validatedDestinationParentPath))
             return;
-
-        // Validate log file path
-        if (!ValidateLogPath(logFilePathInput, out string resolvedLogPath))
-            return;
-
-        LoggerHelper.Initialize(resolvedLogPath);
 
         // Get a source folder name and create a path to the replica folder in a following way: destinationFolderPath / folderName + "_copy"
         string sourceFolderName = Path.GetFileName(validatedSourcePath.TrimEnd(Path.DirectorySeparatorChar));

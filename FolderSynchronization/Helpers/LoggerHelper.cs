@@ -12,10 +12,15 @@ namespace FolderSynchronization.Helpers
         private static string _logFilePath;
         private static bool _initialized = false;
 
-        public static void Initialize(string logPath)
+        public static bool Initialize(string logPath)
         {
             // TODO: opcjonalnie blokowanie obiektu
             // TODO: opcjonalnie watcher na wypadek usunięcia pliku w trakcie działania programu
+            if (_initialized)
+            {
+                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Logger already initialized.");
+                return true;
+            }
 
             try
             {
@@ -36,12 +41,13 @@ namespace FolderSynchronization.Helpers
 
                 _initialized = true;
                 File.AppendAllText(_logFilePath, $"Log started at {DateTime.Now}");
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to initialize log file: {ex.Message}");
                 _initialized = false;
-                throw;
+                return false;
             }
         }
 

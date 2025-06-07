@@ -1,11 +1,11 @@
-﻿using SourceHelpers = FolderSynchronization.Helpers;
+﻿using SourceHelpers = FolderSynchronization.Validators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
+namespace FolderSynchronization.Tests.Validators
 {
     public class ValidateSynchronizationIntervalTests
     {
@@ -15,7 +15,7 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
         [InlineData("3600", 3600)]
         public void ValidateSynchronizationInterval_WithValidInput_ReturnsTrue(string intervalString, int expectedIntervalInSeconds)
         {
-            bool result = SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
+            bool result = SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
 
             Assert.True(result);
             Assert.Equal(expectedIntervalInSeconds, actualIntervalInSeconds);
@@ -27,7 +27,7 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
             int expectedIntervalInSeconds = int.MaxValue;
             string intervalString = expectedIntervalInSeconds.ToString();
 
-            bool result = SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
+            bool result = SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
 
             Assert.True(result);
             Assert.Equal(expectedIntervalInSeconds, actualIntervalInSeconds);
@@ -38,7 +38,7 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
         {
             string intervalString = "2147483648";
 
-            bool result = SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
+            bool result = SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
 
             Assert.False(result);
             Assert.Equal(0, actualIntervalInSeconds);
@@ -50,7 +50,7 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
             int expectedIntervalInSeconds = 0;
             string intervalString = expectedIntervalInSeconds.ToString();
 
-            bool result = SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
+            bool result = SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
 
             Assert.False(result);
             Assert.Equal(0, actualIntervalInSeconds);
@@ -59,8 +59,8 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
 
         [Fact]
         public void ValidateSynchronizationInterval_WithNull_ReturnsFalse()
-        { 
-            bool result = SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(null, out int actualIntervalInSeconds);
+        {
+            bool result = SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(null, out int actualIntervalInSeconds);
 
             Assert.False(result);
             Assert.Equal(0, actualIntervalInSeconds);
@@ -81,7 +81,7 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
         [InlineData(" ")]
         public void ValidateSynchronizationInterval_WithInvalidInput_ReturnsFalse(string intervalString)
         {
-            bool result = SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(intervalString, out _);
+            bool result = SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(intervalString, out _);
 
             Assert.False(result);
         }
@@ -91,7 +91,7 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
         {
             string intervalString = "invalid";
 
-            SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
+            SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
 
             Assert.Equal(0, actualIntervalInSeconds);
         }
@@ -104,7 +104,7 @@ namespace FolderSynchronization.Tests.Helpers.ArgsValidationHelper
         [InlineData("00060", 60)]
         public void ValidateSynchronizationInterval_WithPaddedValidInput_ReturnsTrue(string intervalString, int expectedIntervalInSeconds)
         {
-            bool result = SourceHelpers.ArgsValidationHelper.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
+            bool result = SourceHelpers.SynchronizationIntervalValidator.ValidateSynchronizationInterval(intervalString, out int actualIntervalInSeconds);
 
             Assert.True(result);
             Assert.Equal(expectedIntervalInSeconds, actualIntervalInSeconds);
