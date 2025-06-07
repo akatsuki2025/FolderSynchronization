@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace FolderSynchronization.Validators
 {
@@ -22,7 +23,7 @@ namespace FolderSynchronization.Validators
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: Cannot write to existing log file: {ex.Message}");
+                    Log.Error(ex, "Cannot write to existing log file {fullLogFilePath}", fullLogFilePath);
                     return false;
                 }
             }

@@ -1,6 +1,6 @@
-﻿namespace FolderSynchronization.Validators;
-using static FolderSynchronization.Helpers.CleanupHelper;
+﻿using FolderSynchronization.Validators;
 using FolderSynchronization.Helpers;
+using Serilog;
 
 class Program
 {
@@ -20,10 +20,19 @@ class Program
 
         // Validate log file path and initialize the logger
         if (!LogFileValidator.ValidateLogPath(logFilePathInput, out string resolvedLogPath))
+        {
+            Console.WriteLine("Invalid log file path. Exiting.");
             return;
-
-        if(!LoggerHelper.Initialize(resolvedLogPath))
+        }
+        try
+        {
+            FolderSynchronization.Configuration.LoggerConfiguration.ConfigureSerilog(resolvedLogPath);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to configure logging: " + ex.Message);
             return;
+        }
 
         // Validate synchronization interval (in seconds) and assign it to syncIntervalSeconds
         if (!SynchronizationIntervalValidator.ValidateSynchronizationInterval(synchronizationIntervalInput, out int synchronizationIntervalSeconds))
@@ -38,27 +47,34 @@ class Program
         string sourceFolderName = Path.GetFileName(validatedSourcePath.TrimEnd(Path.DirectorySeparatorChar));
         string replicaFolderPath = Path.Combine(validatedDestinationParentPath, sourceFolderName + "_copy");
 
-        while (true)
+        try
         {
-            try
+            while (true)
             {
-                LoggerHelper.Log($"Synchronizing folders at {DateTime.Now}");                
+                try
+                {
+                    Log.Information("Synchronizing folders at {DateTime}", DateTime.Now);
 
-                SynchronizationHelper.SynchronizeFolder(validatedSourcePath, replicaFolderPath);
+                    SynchronizationHelper.SynchronizeFolder(validatedSourcePath, replicaFolderPath);
 
-                LoggerHelper.Log("Synchronization complete.");
+                    Log.Information("Synchronization complete.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error during synchronization");
+                    CleanupHelper.PromptAndDeleteIncompleteCopy(replicaFolderPath);
+                    return;
+                }
+
+                Log.Information("Next check scheduled in {synchronizationIntervalSeconds} seconds", synchronizationIntervalSeconds);
+                Log.Information("Listening for changes... Press Ctrl+C to exit");
+
+                Thread.Sleep(synchronizationIntervalSeconds * 1000);
             }
-            catch (Exception ex)
-            {
-                LoggerHelper.Log($"Error during synchronization: {ex.Message}");
-                PromptAndDeleteIncompleteCopy(replicaFolderPath);
-                return;
-            }
-
-            LoggerHelper.Log($"Next check scheduled in {synchronizationIntervalSeconds} seconds");
-            LoggerHelper.Log("Listening for changes... Press Ctrl+C to exit");
-
-            Thread.Sleep(synchronizationIntervalSeconds * 1000);
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
     }
 }

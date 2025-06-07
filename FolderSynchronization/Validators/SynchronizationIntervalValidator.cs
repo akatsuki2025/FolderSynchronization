@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace FolderSynchronization.Validators
 {
@@ -13,7 +14,7 @@ namespace FolderSynchronization.Validators
         {
             if (!int.TryParse(intervalInput, out synchronizationIntervalInSeconds) || synchronizationIntervalInSeconds <= 0)
             {
-                LoggerHelper.Log("Error: Synchronization interval must be a non-negative integer (seconds).");
+                Log.Error("Synchronization interval must be a positive integer (seconds). Provided value: {intervalInput}", intervalInput);
                 return false;
             }
             return true;

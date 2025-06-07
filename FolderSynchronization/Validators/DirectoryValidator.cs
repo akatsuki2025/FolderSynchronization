@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace FolderSynchronization.Validators
 {
@@ -43,7 +44,7 @@ namespace FolderSynchronization.Validators
             {
                 if (!suppressError)
                 {
-                    Console.WriteLine($"Error: {directoryDescription} '{originalPath}' does not exist.");
+                    Log.Error("{directoryDescription} '{originalPath}' does not exist", directoryDescription, originalPath);
                 }
                 return false;
             }

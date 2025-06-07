@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 using static FolderSynchronization.Helpers.DeleteHelper;
 
 
@@ -13,8 +14,10 @@ namespace FolderSynchronization.Helpers
     {
         public static void PromptAndDeleteIncompleteCopy(string folderPath)
         {
-            Console.WriteLine("Delete incomplete copy? (y/n)");
-            string answer = Console.ReadLine();
+            Log.Information("Delete incomplete copy? (y/n)");
+            string? answer = Console.ReadLine();
+
+            Log.Information("User response to deletion prompt: '{Answer}'", answer);
             
             if (!string.IsNullOrEmpty(answer) && answer.Trim().ToLower() == "y")
             {
@@ -23,17 +26,20 @@ namespace FolderSynchronization.Helpers
                     if (Directory.Exists(folderPath))
                     {
                         DeleteDirectorySafe(folderPath);
-                        LoggerHelper.Log("Incomplete copy deleted.");
+                        Log.Information("Incomplete copy deleted: {folderPath}", folderPath);
                     }
+                    else 
+                    {
+                        Log.Warning("Directory not found: {folderPath}", folderPath);
                 }
                 catch (Exception ex)
                 {
-                    LoggerHelper.Log($"Failed to delete incomplete copy: {ex.Message}");
+                    Log.Error(ex, "Failed to delete incomplete copy: {folderPath}", folderPath);
                 }
             }
             else
             {
-                LoggerHelper.Log("Incomplete copy retained");
+                Log.Information("User chose not to delete incomplete copyt: {folderPath}", folderPath);
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace FolderSynchronization.Helpers
 {
@@ -12,7 +13,7 @@ namespace FolderSynchronization.Helpers
         {
             if (!Directory.Exists(folderPath))
             {
-                LoggerHelper.Log($"Delete skipped: Directory {folderPath} does not exist");
+                Log.Information("Delete skipped: Directory {folderPath} does not exist", folderPath);
                 return;
             }
 
@@ -27,11 +28,11 @@ namespace FolderSynchronization.Helpers
 
                 // Delete directory recursively
                 Directory.Delete(folderPath, recursive: true);
-                LoggerHelper.Log($"Successfully deleted directory: {folderPath}");
+                Log.Information("Successfully deleted directory: {folderPath}", folderPath);
             }
             catch (Exception ex)
             {
-                LoggerHelper.Log($"Failed to delete directory {folderPath}: {ex.Message}");
+                Log.Error(ex, "Failed to delete directory {folderPath}", folderPath);
                 throw;
             }
         }

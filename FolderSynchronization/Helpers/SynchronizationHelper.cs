@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 
 namespace FolderSynchronization.Helpers
@@ -30,7 +31,7 @@ namespace FolderSynchronization.Helpers
             }
             catch (Exception ex) 
             {
-                LoggerHelper.Log($"Error dusing synchronization: {ex.Message}");
+                Log.Error(ex, $"Error dusing synchronization");
                 throw;
             }
         }
@@ -42,12 +43,12 @@ namespace FolderSynchronization.Helpers
                 if (!Directory.Exists(destinationFolder))
                 {
                     Directory.CreateDirectory(destinationFolder);
-                    LoggerHelper.Log($"Created directory: {destinationFolder}");
+                    Log.Information("Created directory: {destinationFolder}", destinationFolder);
                 }
             }
             catch (Exception ex)
             {
-                LoggerHelper.Log($"Error while creating directory '{destinationFolder}': {ex.Message}");
+                Log.Error(ex,"Error while creating directory {destinationFolder}", destinationFolder);
                 throw;
             }
         }
@@ -91,12 +92,12 @@ namespace FolderSynchronization.Helpers
                         File.Copy(sourceFile, destinationFilePath, overwrite: true);
                         // Set the same last write time to avoid unnecessary future copies
                         File.SetLastWriteTimeUtc(destinationFilePath, File.GetLastWriteTimeUtc(sourceFile));
-                        LoggerHelper.Log($"Successfully copied file '{fileName}'");
+                        Log.Information("Successfully copied file {fileName}", fileName);
                     }
                 }
                 catch (Exception ex)
                 {
-                    LoggerHelper.Log($"Error processing file {sourceFile}: {ex.Message}");
+                    Log.Error(ex,"Error processing file {sourceFile}", sourceFile);
                 }
             }
         }
@@ -128,7 +129,7 @@ namespace FolderSynchronization.Helpers
                 }
                 catch (Exception ex)
                 {
-                    LoggerHelper.Log($"Error processing subdirectory '{sourceSubfolder}': {ex.Message}");
+                    Log.Error(ex, "Error processing subdirectory {sourceSubfolder}", sourceSubfolder);
                     throw;
                 }
             }
@@ -150,11 +151,11 @@ namespace FolderSynchronization.Helpers
                         try
                         {
                             File.Delete(fileToDelete);
-                            LoggerHelper.Log($"Deleted extra file: '{destinationFileName}' from destination folder");
+                            Log.Information("Deleted extra file: {destinationFileName} from destination folder", destinationFileName);
                         }
                         catch (Exception ex)
                         {
-                            LoggerHelper.Log($"Error: Failed to delete file '{destinationFileName}': {ex.Message}");
+                            Log.Error(ex, "Failed to delete file {destinationFileName}", destinationFileName);
                             throw;
                         }
                     }
@@ -162,7 +163,7 @@ namespace FolderSynchronization.Helpers
             }
             catch (Exception ex)
             {
-                LoggerHelper.Log($"Error removing extra files in '{destinationFolder}': {ex.Message}");
+                Log.Error(ex, "Error removing extra files in {destinationFolder}", destinationFolder);
                 throw;
             }
         }
@@ -187,11 +188,11 @@ namespace FolderSynchronization.Helpers
                         try
                         {
                             DeleteHelper.DeleteDirectorySafe(directoryPathToDelete);
-                            LoggerHelper.Log($"Deleted directory that does not exist in source directory: '{directoryNameToCheck}'");
+                            Log.Information("Deleted directory that does not exist in source directory: {directoryNameToCheck}", directoryNameToCheck);
                         }
                         catch (Exception ex)
                         {
-                            LoggerHelper.Log($"Error: Failed to delete directory {directoryNameToCheck}: {ex.Message}");
+                            Log.Error(ex, "Failed to delete directory {directoryNameToCheck}", directoryNameToCheck);
                             throw;
                         }
                     }
@@ -199,7 +200,7 @@ namespace FolderSynchronization.Helpers
             }
             catch (Exception ex)
             {
-                LoggerHelper.Log($"Error removing extra directories in {destinationFolder}: {ex.Message}");
+                Log.Error(ex, "Error removing extra directories in {destinationFolder}", destinationFolder);
                 throw;
             }
         }
