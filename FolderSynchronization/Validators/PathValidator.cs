@@ -5,52 +5,33 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Serilog;
+using FolderSynchronization.Exceptions;
 
 namespace FolderSynchronization.Validators
 {
     public static class PathValidator
     {
-        public static bool IsEmptyOrWhitespace(string path, string pathDescription)
+        public static string ValidatePath(string path, string pathDescription, bool allowDriveRoot)
         {
             if (string.IsNullOrWhiteSpace(path))
-            {
-                Console.WriteLine($"Error: {pathDescription} cannot be empty or whitespace.");
-                return true;
-            }
-            return false;
-        }
+                throw new ValidationException($"{pathDescription} cannot be empty or whitespace");
 
-        public static bool IsDriveLetterWithColonOnly(string path, string pathDescription)
-        {
-            if (Regex.IsMatch(path, @"^[A-Za-z]:\s*$"))
-            {
-                Console.WriteLine($"Error: {pathDescription} '{path}' is not a valid folder path.");
-                return true;
-            }
-            return false;
-        }
+            string trimmedPath = path.Trim();
 
-        public static bool ResolveAndValidateFullPath(string directoryPath, string directoryDescription, out string resolvedFullPath)
-        {
-            resolvedFullPath = string.Empty;
-
+            if (Regex.IsMatch(trimmedPath, @"^[A-Za-z]:\s*$"))
+                throw new ValidationException($"{pathDescription} '{path}' cannot be just a drive letter");
+            
             try
             {
-                resolvedFullPath = Path.GetFullPath(directoryPath);
+                string fullPath = Path.GetFullPath(trimmedPath);
+                if (!allowDriveRoot && fullPath.Equals(Path.GetPathRoot(path), StringComparison.OrdinalIgnoreCase))
+                    throw new ValidationException($"{pathDescription} '{path}' cannot be a drive root");
 
-                // Check if the path is a drive root (e.g. "C:\")
-                if (resolvedFullPath.Equals(Path.GetPathRoot(directoryPath), StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is a drive root. Copying an entire drive is not allowed.");
-                    return false;
-                }
-
-                return true;
+                return fullPath;
             }
-            catch
+            catch (Exception ex) 
             {
-                Console.WriteLine($"Error: {directoryDescription} '{directoryPath}' is not a valid path.");
-                return false;
+                throw new ValidationException($"Invalid {pathDescription}: {ex.Message}");
             }
         }
     }

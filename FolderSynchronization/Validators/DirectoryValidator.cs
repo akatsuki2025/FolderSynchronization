@@ -1,54 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FolderSynchronization.Exceptions;
 using Serilog;
 
 namespace FolderSynchronization.Validators
 {
     public static class DirectoryValidator
     {
-        public static bool ValidateDirectory(string directoryPath, string directoryDescription, out string resolvedFullPath, bool suppressError = false)
+        public static void ValidateSourceDirectory(string normalizedSourcePath)
         {
-            resolvedFullPath = string.Empty;
-
-            if (PathValidator.IsEmptyOrWhitespace(directoryPath, directoryDescription))
-            {
-                return false;
+            try
+            { 
+                AccessValidator.ValidateReadAccess(normalizedSourcePath);
             }
-
-            directoryPath = directoryPath.Trim();
-
-            if (PathValidator.IsDriveLetterWithColonOnly(directoryPath, directoryDescription))
+            catch (ValidationException ex)
             {
-                return false;
+                Log.Error(ex, "Source folder validation failed: {Error}", ex.Message);
+                throw;
             }
-
-            if (!PathValidator.ResolveAndValidateFullPath(directoryPath, directoryDescription, out resolvedFullPath))
-            {
-                return false;
-            }
-
-            if (!ConfirmDirectoryExists(resolvedFullPath, directoryPath, directoryDescription, suppressError))
-            {
-                return false;
-            }
-
-            return true;
         }
 
-        public static bool ConfirmDirectoryExists(string resolvedPath, string originalPath, string directoryDescription, bool suppressError = false)
+        public static void ValidateDestinationDirectory(string normalizedDestinationPath, string normalizedSourcePath)
         {
-            if (!Directory.Exists(resolvedPath))
+            try
             {
-                if (!suppressError)
-                {
-                    Log.Error("{directoryDescription} '{originalPath}' does not exist", directoryDescription, originalPath);
-                }
-                return false;
+                FolderRelationshipValidator.ValidateSourceAndDestinationRelationship(normalizedSourcePath, normalizedDestinationPath);
+                string? destinationParentPath = Path.GetDirectoryName(normalizedDestinationPath);
+                AccessValidator.ValidateReadAccess(destinationParentPath);
             }
-            return true;
+            catch (ValidationException ex)
+            {
+                Log.Error(ex, "Destination folder validation failed: {Error}", ex.Message);
+                throw;
+            }
+        }
+
+        public static void ValidateLogDirectory(string normalizedLogPath)
+        {
+            try
+            {
+                if (!Directory.Exists(normalizedLogPath))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(normalizedLogPath);
+                        Console.WriteLine($"Created log directory: {normalizedLogPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ValidationException($"Cannot create log directory: {ex.Message}");
+                    }
+                }
+
+                AccessValidator.ValidateWriteAccess(normalizedLogPath);
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine($"Log folder validation failed: {ex.Message}");
+                throw;
+            }
         }
     }
 }
