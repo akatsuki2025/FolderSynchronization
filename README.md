@@ -21,14 +21,6 @@ FolderSynchronization <sourceFolderPath> <destinationFolderPath> <synchronizatio
 - **synchronizationIntervalSeconds**: Time between synchronization operations in seconds
 - **logFolderPath**: Directory where log files will be stored. Log files are automatically created with timestamps (format: log_YYYYMMDD.txt) and limited to 100MB each.
 
-## Implementation Details
-The application consists of several helper classes:
-
-- `ArgsValidationHelper`: Validates command-line arguments
-- `SynchronizationHelper`: Performs the actual synchronization
-- `LoggerHelper`: Handles logging to console and file
-- `CleanupHelper`: Manages cleanup of incomplete copies on failure
-
 ## Synchronization Process
 1. Creates destination folder if it doesn't exist
 2. Copies new and modified files from source to destination

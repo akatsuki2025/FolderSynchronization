@@ -56,28 +56,7 @@ class Program
             // 5. Validate synchronization interval (in seconds) and assign it to syncIntervalSeconds
             int synchronizationIntervalSeconds = SynchronizationIntervalValidator.ValidateSynchronizationInterval(synchronizationIntervalInput);
 
-            while (true)
-            {
-                try
-                {
-                    Log.Information("Synchronizing folders at {DateTime}", DateTime.Now);
-
-                    SynchronizationHelper.SynchronizeFolder(normalizedSourcePath, replicaFolderPath);
-
-                    Log.Information("Synchronization complete.");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Error during synchronization");
-                    CleanupHelper.PromptAndDeleteIncompleteCopy(replicaFolderPath);
-                    return;
-                }
-
-                Log.Information("Next check scheduled in {synchronizationIntervalSeconds} seconds", synchronizationIntervalSeconds);
-                Log.Information("Listening for changes... Press Ctrl+C to exit");
-
-                Thread.Sleep(synchronizationIntervalSeconds * 1000);
-            }
+            FolderSynchronization.Services.FolderSynchronizer.RunPeriodicSynchronization(normalizedSourcePath, replicaFolderPath, synchronizationIntervalSeconds);
         }
         catch (ValidationException ex)
         {
