@@ -18,12 +18,18 @@ namespace FolderSynchronization.Validators
 
             string trimmedPath = path.Trim();
 
-            if (Regex.IsMatch(trimmedPath, @"^[A-Za-z]:\s*$"))
+            if (Regex.IsMatch(trimmedPath, @"^\s*[A-Za-z](:)?\s*$"))
                 throw new ValidationException($"{pathDescription} '{path}' cannot be just a drive letter");
-            
+
+            const string invalidChars = "\"<>|*?";
+
+            if (trimmedPath.IndexOfAny(invalidChars.ToCharArray()) >= 0)
+                throw new ValidationException($"Invalid {pathDescription}: The path contains invalid characters.");
+
             try
             {
                 string fullPath = Path.GetFullPath(trimmedPath);
+
                 if (!allowDriveRoot && fullPath.Equals(Path.GetPathRoot(path), StringComparison.OrdinalIgnoreCase))
                     throw new ValidationException($"{pathDescription} '{path}' cannot be a drive root");
 
