@@ -6,10 +6,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 class Program
 {
+    private const int EXPECTED_ARGUMENT_COUNT = 4;
+
     static void Main(string[] args)
     {
-        // Validate provided arguments
-        if (args.Length != 4)
+        if (args.Length != EXPECTED_ARGUMENT_COUNT)
         {
             Console.WriteLine("Usage: FolderSynchronization <sourceFolderPath> <destinationFolderPath> <synchronizationIntervalSeconds> <logFolderPath>");
             return;
@@ -22,7 +23,7 @@ class Program
 
         try
         {
-            // 1. Validate log file path and set up the logger
+            // 1. Validate log path and set up the logger
             string normalizedLogPath = PathValidator.ValidatePath(logPathInput, "Log directory", allowDriveRoot: true);
             DirectoryValidator.ValidateLogDirectory(normalizedLogPath);
             
@@ -46,16 +47,14 @@ class Program
             string replicaFolderPath = Path.Combine(normalizedDestinationPath, sourceFolderName + "_copy");
             DirectoryValidator.ValidateDestinationDirectory(replicaFolderPath, normalizedSourcePath);
 
-
-            // 4. Validate synchronization interval (in seconds) and assign it to syncIntervalSeconds
-            if (!SynchronizationIntervalValidator.ValidateSynchronizationInterval(synchronizationIntervalInput, out int synchronizationIntervalSeconds))
-                return;
-
-            // 5. Validate log folder is not inside synchronized folders
+            // 4. Validate log folder is not inside synchronized folders
             FolderRelationshipValidator.ValidateLogFolderReleationship(
                 normalizedLogPath,
                 normalizedSourcePath,
                 replicaFolderPath);
+
+            // 5. Validate synchronization interval (in seconds) and assign it to syncIntervalSeconds
+            int synchronizationIntervalSeconds = SynchronizationIntervalValidator.ValidateSynchronizationInterval(synchronizationIntervalInput);
 
             while (true)
             {
