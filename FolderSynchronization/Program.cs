@@ -48,7 +48,7 @@ class Program
             DirectoryValidator.ValidateDestinationDirectory(replicaFolderPath, normalizedSourcePath);
 
             // 4. Validate log folder is not inside synchronized folders
-            FolderRelationshipValidator.ValidateLogFolderReleationship(
+            FolderRelationshipValidator.ValidateLogFolderRelationship(
                 normalizedLogPath,
                 normalizedSourcePath,
                 replicaFolderPath);

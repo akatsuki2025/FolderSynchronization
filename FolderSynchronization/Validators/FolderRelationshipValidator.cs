@@ -12,12 +12,15 @@ namespace FolderSynchronization.Validators
         public static void ValidateSourceAndDestinationRelationship(string sourcePath, string destinationPath)
         {
             string? destinationParentPath = Path.GetDirectoryName(destinationPath);
-            ValidateNotSameFolder(sourcePath, destinationParentPath, "Source", "Destination");
+
+            if (destinationParentPath is not null)
+                ValidateNotSameFolder(sourcePath, destinationParentPath, "Source", "Destination");
+
             ValidateNotNestedInside(sourcePath, destinationPath, "Source", "Destination");
             ValidateNotNestedInside(destinationPath, sourcePath, "Destination", "Source");
         }
 
-        public static void ValidateLogFolderReleationship(string logPath, string sourcePath, string destinationPath)
+        public static void ValidateLogFolderRelationship(string logPath, string sourcePath, string destinationPath)
         {
             ValidateNotNestedInside(logPath, sourcePath, "Log", "Source");
             ValidateNotNestedInside(logPath, destinationPath, "Log", "Destination");
@@ -42,5 +45,7 @@ namespace FolderSynchronization.Validators
                 throw new ValidationException($"{folderToCheckName} folder cannot be inside {containerName} folder");
             }
         }
+
+
     }
 }
