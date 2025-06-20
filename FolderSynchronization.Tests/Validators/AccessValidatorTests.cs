@@ -37,7 +37,7 @@ namespace FolderSynchronization.Tests.Validators
         public void ValidateReadAccess_WithInvalidPath_ThrowsValidationException()
         {
             // Arrange
-            string nonExistentPath = Path.Combine(_testDirectory, "NonExistetntFolder");
+            string nonExistentPath = Path.Combine(_testDirectory, "NonExistentFolder");
             string expectedError = "No read access";
 
             // Act
@@ -57,6 +57,21 @@ namespace FolderSynchronization.Tests.Validators
 
             // Act
             var exception = Assert.Throws<ValidationException>(() => _accessValidator.ValidateReadAccess(path));
+
+            // Assert
+            Assert.Contains(expectedError, exception.Message);
+        }
+
+        [Fact]
+        public void ValidateReadAccess_WithFilePath_ThrowsValidationException()
+        {
+            // Arrange
+            string filePath = Path.Combine(_testDirectory, "TestFile.txt");
+            _mockFileSystem.AddFile(filePath, new MockFileData("content"));
+            string expectedError = "No read access";
+
+            // Act
+            var exception = Assert.Throws<ValidationException>(() => _accessValidator.ValidateReadAccess(filePath));
 
             // Assert
             Assert.Contains(expectedError, exception.Message);
@@ -95,17 +110,33 @@ namespace FolderSynchronization.Tests.Validators
             _mockFileSystem.File.SetAttributes(readOnlyDirectory, FileAttributes.ReadOnly);
             string expectedError = "No write access";
 
-            // Act & assert
             try
             {
+                // Act
                 var exception = Assert.Throws<ValidationException>(() => _accessValidator.ValidateWriteAccess(readOnlyDirectory));
 
+                // Assert
                 Assert.Contains(expectedError, exception.Message);
             }
             finally
             {
                 _mockFileSystem.File.SetAttributes(readOnlyDirectory, FileAttributes.Normal);
             }
+        }
+
+        [Fact]
+        public void ValidateWriteAccess_WithFilePath_ThrowsValidationException()
+        {
+            // Arrange
+            string filePath = Path.Combine(_testDirectory, "TestFile.txt");
+            _mockFileSystem.AddFile(filePath, new MockFileData("content"));
+            string expectedError = "No write access";
+
+            // Act
+            var exception = Assert.Throws<ValidationException>(() => _accessValidator.ValidateWriteAccess(filePath));
+
+            // Assert
+            Assert.Contains(expectedError, exception.Message);
         }
     }
 }
