@@ -8,37 +8,20 @@ using System.IO.Abstractions;
 
 namespace FolderSynchronization.Validators
 {
-    public static class AccessValidator
+    public class AccessValidator : IAccessValidator
     {
-        private static readonly IFileSystem _defaultFileSystem;
-        private static IFileSystem _currentFileSystem;
+        private readonly IFileSystem _fileSystem;
 
-        static AccessValidator()
+        public AccessValidator(IFileSystem fileSystem)
         {
-            _defaultFileSystem = new FileSystem();
-            _currentFileSystem = _defaultFileSystem;
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
-        private static IFileSystem FileSystem
-        {
-            get => _currentFileSystem ?? _defaultFileSystem;
-        }
-
-        public static void SetFileSystem(IFileSystem fileSystem)
-        {
-            _currentFileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-        }
-
-        public static void ResetFileSystem()
-        {
-            _currentFileSystem = _defaultFileSystem;
-        }
-
-        public static void ValidateReadAccess(string path)
+        public void ValidateReadAccess(string path)
         {
             try
             {
-                FileSystem.Directory.GetFiles(path);
+                _fileSystem.Directory.GetFiles(path);
             }
             catch (Exception ex) 
             {
@@ -46,13 +29,13 @@ namespace FolderSynchronization.Validators
             }
         }
 
-        public static void ValidateWriteAccess(string path)
+        public void ValidateWriteAccess(string path)
         {
             try
             {
-                string testFile = Path.Combine(path, "write_test.tmp");
-                FileSystem.File.WriteAllText(testFile, string.Empty);
-                FileSystem.File.Delete(testFile);
+                string testFile = _fileSystem.Path.Combine(path, "write_test.tmp");
+                _fileSystem.File.WriteAllText(testFile, string.Empty);
+                _fileSystem.File.Delete(testFile);
             }
             catch (Exception ex)
             {

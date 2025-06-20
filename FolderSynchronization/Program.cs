@@ -2,6 +2,7 @@
 using FolderSynchronization.Helpers;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
+using System.IO.Abstractions;
 using System.ComponentModel.DataAnnotations.Schema;
 
 class Program
@@ -21,11 +22,14 @@ class Program
         string synchronizationIntervalInput = args[2];
         string logPathInput = args[3];
 
+        var fileSystem = new FileSystem();
+        var accessValidator = new AccessValidator(fileSystem);
+
         try
         {
             // 1. Validate log path and set up the logger
             string normalizedLogPath = PathValidator.ValidatePath(logPathInput, "Log directory", allowDriveRoot: true);
-            DirectoryValidator.ValidateLogDirectory(normalizedLogPath);
+            DirectoryValidator.ValidateLogDirectory(normalizedLogPath, accessValidator, fileSystem);
             
             try
             {
@@ -39,13 +43,13 @@ class Program
 
             // 2. Validate source folder and get normalized path
             string normalizedSourcePath = PathValidator.ValidatePath(sourcePathInput, "Source directory", allowDriveRoot: false);
-            DirectoryValidator.ValidateSourceDirectory(normalizedSourcePath);
+            DirectoryValidator.ValidateSourceDirectory(normalizedSourcePath, accessValidator);
 
             // 3. Validate destination folder and get normalized path
             string normalizedDestinationPath = PathValidator.ValidatePath(destinationParentPathInput, "Destination directory", allowDriveRoot: false);
             string sourceFolderName = Path.GetFileName(normalizedSourcePath.TrimEnd(Path.DirectorySeparatorChar));
             string replicaFolderPath = Path.Combine(normalizedDestinationPath, sourceFolderName + "_copy");
-            DirectoryValidator.ValidateDestinationDirectory(replicaFolderPath, normalizedSourcePath);
+            DirectoryValidator.ValidateDestinationDirectory(replicaFolderPath, normalizedSourcePath, accessValidator);
 
             // 4. Validate log folder is not inside synchronized folders
             FolderRelationshipValidator.ValidateLogFolderRelationship(

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,11 +12,11 @@ namespace FolderSynchronization.Validators
 {
     public static class DirectoryValidator
     {
-        public static void ValidateSourceDirectory(string normalizedSourcePath)
+        public static void ValidateSourceDirectory(string normalizedSourcePath, IAccessValidator accessValidator)
         {
             try
             { 
-                AccessValidator.ValidateReadAccess(normalizedSourcePath);
+                accessValidator.ValidateReadAccess(normalizedSourcePath);
             }
             catch (ValidationException ex)
             {
@@ -24,13 +25,13 @@ namespace FolderSynchronization.Validators
             }
         }
 
-        public static void ValidateDestinationDirectory(string normalizedDestinationPath, string normalizedSourcePath)
+        public static void ValidateDestinationDirectory(string normalizedDestinationPath, string normalizedSourcePath, IAccessValidator accessValidator)
         {
             try
             {
                 FolderRelationshipValidator.ValidateSourceAndDestinationRelationship(normalizedSourcePath, normalizedDestinationPath);
                 string? destinationParentPath = Path.GetDirectoryName(normalizedDestinationPath);
-                AccessValidator.ValidateReadAccess(destinationParentPath);
+                accessValidator.ValidateReadAccess(destinationParentPath);
             }
             catch (ValidationException ex)
             {
@@ -39,15 +40,15 @@ namespace FolderSynchronization.Validators
             }
         }
 
-        public static void ValidateLogDirectory(string normalizedLogPath)
+        public static void ValidateLogDirectory(string normalizedLogPath, IAccessValidator accessValidator, IFileSystem fileSystem)
         {
             try
             {
-                if (!Directory.Exists(normalizedLogPath))
+                if (!fileSystem.Directory.Exists(normalizedLogPath))
                 {
                     try
                     {
-                        Directory.CreateDirectory(normalizedLogPath);
+                        fileSystem.Directory.CreateDirectory(normalizedLogPath);
                         Console.WriteLine($"Created log directory: {normalizedLogPath}");
                     }
                     catch (Exception ex)
@@ -56,7 +57,7 @@ namespace FolderSynchronization.Validators
                     }
                 }
 
-                AccessValidator.ValidateWriteAccess(normalizedLogPath);
+                accessValidator.ValidateWriteAccess(normalizedLogPath);
             }
             catch (ValidationException ex)
             {
