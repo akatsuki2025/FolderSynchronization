@@ -71,6 +71,37 @@ namespace FolderSynchronization.Tests.Validators
             Assert.Contains(expectedError, exception.Message);
         }
 
+        [Theory]
+        [InlineData(@"C:\TestFolder\", @"C:\Destination\TestFolder_copy\")]
+        [InlineData(@"C:\TestFolder", @"C:\Destination\TestFolder_copy\")]
+        [InlineData(@"C:\TestFolder\", @"C:\Destination\TestFolder_copy")]
+        public void ValidateSourceAndDestinationRelationship_WithTrailingSlashes_DoesNotThrowException(string sourcePath, string destinationPath)
+        {
+            // Arrange
+            void TestAction() => FolderRelationshipValidator.ValidateSourceAndDestinationRelationship(sourcePath, destinationPath);
+            
+            // Act
+            var exception = Record.Exception(TestAction);
+            
+            // Assert
+            Assert.Null(exception);
+        }
+
+        [Theory]
+        [InlineData(@".\TestFolder", @"C:\Destination\TestFolder_copy")]
+        [InlineData(@"..\TestFolder", @"C:\Destination\TestFolder_copy")]
+        public void ValidateSourceAndDestinationRelationship_WithRelativePaths_DoesNotThrowException(string sourcePath, string destinationPath)
+        {
+            // Arrange
+            void TestAction() => FolderRelationshipValidator.ValidateSourceAndDestinationRelationship(sourcePath, destinationPath);
+            
+            // Act
+            var exception = Record.Exception(TestAction);
+            
+            // Assert
+            Assert.Null(exception);
+        }
+
         [Fact]
         public void ValidateLogFolderRelationship_WhenValidPaths_DoesNotThrowException()
         {

@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SourceHelpers = FolderSynchronization.Validators;
+﻿using SourceHelpers = FolderSynchronization.Validators;
 using FolderSynchronization.Exceptions;
-using System.Security.Cryptography.X509Certificates;
 
 namespace FolderSynchronization.Tests.Validators
 {
-    public class ValidatePathTests
+    public class PathValidatorTests
     {
         [Theory]
         [InlineData("C:\\folder")]

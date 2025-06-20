@@ -1,15 +1,8 @@
 ﻿using SourceHelpers = FolderSynchronization.Validators;
-using FolderSynchronization.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 
 namespace FolderSynchronization.Tests.Validators
 {
-    public class ValidateSynchronizationIntervalTests
+    public class SynchronizationIntervalValidatorTests
     {
         [Theory]
         [InlineData("1")]

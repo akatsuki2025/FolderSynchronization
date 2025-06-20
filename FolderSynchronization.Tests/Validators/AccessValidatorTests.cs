@@ -1,6 +1,5 @@
 ﻿using FolderSynchronization.Validators;
 using FolderSynchronization.Exceptions;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 
 
